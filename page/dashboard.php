@@ -408,7 +408,7 @@ include '../includes/dashboard_header.php';
                             <div class="action-title">Mohon Lesen Baru</div>
                             <div class="action-desc">Buat permohonan lesen perniagaan baharu</div>
                         </a>
-                        <a href="my-applications.php" class="action-card">
+                        <a href="applications.php" class="action-card">
                             <div class="action-icon">
                                 <i class="bi bi-file-earmark-text"></i>
                             </div>
@@ -474,7 +474,7 @@ include '../includes/dashboard_header.php';
                         <span class="status-badge status-pending">Menunggu Semakan</span>
                     </div>
                     <div class="text-center mt-3">
-                        <a href="my-applications.php" class="btn btn-primary">
+                        <a href="applications.php" class="btn btn-primary">
                             Lihat Semua Permohonan
                         </a>
                     </div>

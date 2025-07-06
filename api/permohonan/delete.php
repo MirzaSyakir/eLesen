@@ -54,6 +54,17 @@ try {
     $delete->execute([$application_number, $user_id]);
     if ($delete->rowCount() === 0) throw new Exception('Application not found or not yours');
 
+    $upload_folder = '../../uploads/permohonan/' . $application_number . '/';
+    if (file_exists($upload_folder)) {
+        $files = glob($upload_folder . '*');
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                unlink($file);
+            }
+        }
+        rmdir($upload_folder);
+    }
+
     echo json_encode(['status' => 200, 'message' => 'Application deleted']);
 } catch (Exception $e) {
     http_response_code(400);

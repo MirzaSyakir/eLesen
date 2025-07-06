@@ -34,17 +34,33 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     $user_id = $user['id'];
 
-    $data = json_decode(file_get_contents('php://input'), true);
-    $application_number = $data['application_number'] ?? null;
+    // Get application number from POST data
+    $application_number = $_POST['application_number'] ?? null;
     if (!$application_number) throw new Exception('Application number required');
+
+    // Check if application exists and belongs to user
+    $check = $db->prepare("SELECT * FROM license_applications WHERE application_number = ? AND user_id = ?");
+    $check->execute([$application_number, $user_id]);
+    if ($check->rowCount() === 0) throw new Exception('Application not found or not yours');
+
+    $application = $check->fetch(PDO::FETCH_ASSOC);
+    
+    // Only allow submission if status_borang is 'draft'
+    if ($application['status_borang'] !== 'draft') {
+        http_response_code(403);
+        echo json_encode(['status' => 403, 'message' => 'Permohonan tidak boleh diserahkan semula.']);
+        exit;
+    }
 
     $status_borang = isset($_POST['status_borang']) ? $_POST['status_borang'] : 'submit';
 
-    $update = $db->prepare("UPDATE license_applications SET status = 'pending', status_borang = ? WHERE application_number = ? AND user_id = ?");
+    // Update application status
+    $update = $db->prepare("UPDATE license_applications SET status = 'pending', status_borang = ?, updated_at = NOW() WHERE application_number = ? AND user_id = ?");
     $update->execute([$status_borang, $application_number, $user_id]);
+    
     if ($update->rowCount() === 0) throw new Exception('Application not found or not yours');
 
-    echo json_encode(['status' => 200, 'message' => 'Application submitted']);
+    echo json_encode(['status' => 200, 'message' => 'Application submitted', 'application_number' => $application_number]);
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode(['status' => 400, 'message' => $e->getMessage()]);

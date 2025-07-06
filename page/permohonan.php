@@ -826,12 +826,18 @@ include '../includes/dashboard_header.php';
                                         Padam
                                     </button>
                                 </div>
-                                <div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <!-- Application Number Display -->
+                                    <div id="applicationNumberDisplay" class="d-none">
+                                        <span class="text-muted">Nombor Permohonan:</span>
+                                        <span class="fw-bold text-primary" id="applicationNumberText">-</span>
+                                    </div>
+                                    
                                     <button type="button" class="btn btn-outline-primary" onclick="saveDraft()">
                                         <i class="bi bi-save me-2"></i>
                                         Simpan (Draft)
                                     </button>
-                                    <button type="submit" class="btn btn-success ms-2">
+                                    <button type="submit" id="submitButton" class="btn btn-success" style="display: none;">
                                         <i class="bi bi-send me-2"></i>
                                         Serah Permohonan
                                     </button>
@@ -848,6 +854,7 @@ include '../includes/dashboard_header.php';
     <script>
         let userData = null;
         let uploadedFiles = {};
+        let currentApplicationNumber = null; // Track current application being edited
         
         document.addEventListener('DOMContentLoaded', function() {
             const sessionToken = localStorage.getItem('sessionToken');
@@ -870,6 +877,13 @@ include '../includes/dashboard_header.php';
             validateSession(sessionToken);
             initializeDocumentUploads();
             initializeFormHandlers();
+            
+            // Check if we're editing an existing draft
+            const urlParams = new URLSearchParams(window.location.search);
+            const editApplicationNumber = urlParams.get('edit');
+            if (editApplicationNumber) {
+                loadExistingDraft(editApplicationNumber);
+            }
         });
         
         async function validateSession(token) {
@@ -927,6 +941,117 @@ include '../includes/dashboard_header.php';
             
             // Update passport photo display
             updatePassportPhotoDisplay();
+        }
+        
+        async function loadExistingDraft(applicationNumber) {
+            try {
+                const response = await fetch(`../api/permohonan/view.php?application_number=${applicationNumber}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('sessionToken')}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.data && data.data.application) {
+                    const application = data.data.application;
+                    currentApplicationNumber = application.application_number;
+                    
+                    // Fill form fields with existing data
+                    document.getElementById('licenseType').value = application.license_type || '';
+                    document.getElementById('processingType').value = application.processing_type || '';
+                    document.getElementById('businessName').value = application.business_name || '';
+                    document.getElementById('businessAddress').value = application.business_address || '';
+                    document.getElementById('buildingType').value = application.building_type || '';
+                    document.getElementById('operationYear').value = application.operation_year || '';
+                    document.getElementById('premiseSize').value = application.premise_size || '';
+                    document.getElementById('position').value = application.position || '';
+                    document.getElementById('ssmRegistration').value = application.ssm_registration || '';
+                    document.getElementById('maleWorkers').value = application.male_workers || 0;
+                    document.getElementById('femaleWorkers').value = application.female_workers || 0;
+                    document.getElementById('hasSignboard').value = application.has_signboard || '';
+                    document.getElementById('signboardType').value = application.signboard_type || '';
+                    document.getElementById('signboardSize').value = application.signboard_size || '';
+                    document.getElementById('applicantName').value = application.applicant_name || userData.full_name;
+                    document.getElementById('applicantIC').value = application.applicant_ic || userData.ic_number;
+                    
+                    // Show signboard details if has signboard
+                    if (application.has_signboard === 'Ya') {
+                        document.getElementById('signboardDetails').style.display = 'block';
+                    }
+                    
+                    // Update fee calculation
+                    calculateFees();
+                    
+                    // Load existing uploaded files
+                    loadExistingFiles(application);
+                    
+                    // Show submit button and application number for existing drafts
+                    showSubmitButton();
+                    updateApplicationNumberDisplay();
+                    
+                    console.log('Draft loaded successfully:', application);
+                } else {
+                    console.error('Failed to load draft:', data.message);
+                }
+            } catch (error) {
+                console.error('Load draft error:', error);
+            }
+        }
+        
+        function loadExistingFiles(application) {
+            // Load existing file paths and update status
+            const fileFields = ['ssm', 'plan', 'ic', 'receipt', 'tax', 'signboard', 'health', 'land', 'owner', 'halal'];
+            
+            fileFields.forEach(field => {
+                const filePath = application[field + '_file'];
+                if (filePath) {
+                    // Update status to show file is uploaded
+                    updateDocumentStatus(field, 'uploaded', 'Fail telah dimuat naik');
+                    
+                    // Store the file path for reference
+                    uploadedFiles[field] = {
+                        name: filePath.split('/').pop(),
+                        path: filePath,
+                        isExisting: true
+                    };
+                }
+            });
+            
+            showSubmitButton();
+            updateApplicationNumberDisplay();
+        }
+        
+        function showSubmitButton() {
+            const submitButton = document.getElementById('submitButton');
+            if (submitButton) {
+                submitButton.style.display = 'inline-block';
+            }
+        }
+        
+        function updateApplicationNumberDisplay() {
+            const display = document.getElementById('applicationNumberDisplay');
+            const text = document.getElementById('applicationNumberText');
+            
+            if (currentApplicationNumber && display && text) {
+                text.textContent = currentApplicationNumber;
+                display.classList.remove('d-none');
+            }
+        }
+        
+        function hideSubmitButton() {
+            const submitButton = document.getElementById('submitButton');
+            if (submitButton) {
+                submitButton.style.display = 'none';
+            }
+        }
+        
+        function hideApplicationNumberDisplay() {
+            const display = document.getElementById('applicationNumberDisplay');
+            if (display) {
+                display.classList.add('d-none');
+            }
         }
         
         function showApplication() {
@@ -1075,11 +1200,18 @@ include '../includes/dashboard_header.php';
             
             // Add uploaded files
             Object.keys(uploadedFiles).forEach(documentType => {
-                formData.append(`documents[${documentType}]`, uploadedFiles[documentType]);
+                if (uploadedFiles[documentType] && !uploadedFiles[documentType].isExisting) {
+                    formData.append(`documents[${documentType}]`, uploadedFiles[documentType]);
+                }
             });
             
             formData.append('action', 'save_draft');
             formData.append('status_borang', 'draft');
+            
+            // Add application number if editing existing draft
+            if (currentApplicationNumber) {
+                formData.append('application_number', currentApplicationNumber);
+            }
             
             try {
                 const response = await fetch('../api/permohonan/simpan.php', {
@@ -1093,7 +1225,12 @@ include '../includes/dashboard_header.php';
                 const data = await response.json();
                 
                 if (response.ok) {
+                    if (!currentApplicationNumber) {
+                        currentApplicationNumber = data.application_number;
+                    }
                     alert('Draft berjaya disimpan!');
+                    showSubmitButton();
+                    updateApplicationNumberDisplay();
                 } else {
                     alert('Ralat: ' + (data.message || 'Gagal menyimpan draft'));
                 }
@@ -1116,11 +1253,18 @@ include '../includes/dashboard_header.php';
             
             // Add uploaded files
             Object.keys(uploadedFiles).forEach(documentType => {
-                formData.append(`documents[${documentType}]`, uploadedFiles[documentType]);
+                if (uploadedFiles[documentType] && !uploadedFiles[documentType].isExisting) {
+                    formData.append(`documents[${documentType}]`, uploadedFiles[documentType]);
+                }
             });
             
             formData.append('action', 'submit_application');
             formData.append('status_borang', 'submit');
+            
+            // Add application number if editing existing draft
+            if (currentApplicationNumber) {
+                formData.append('application_number', currentApplicationNumber);
+            }
             
             try {
                 const response = await fetch('../api/permohonan/submit.php', {
@@ -1134,7 +1278,7 @@ include '../includes/dashboard_header.php';
                 const data = await response.json();
                 
                 if (response.ok) {
-                    alert('Permohonan berjaya diserahkan! Nombor permohonan: ' + data.application_number);
+                    alert('Permohonan berjaya diserahkan! Nombor permohonan: ' + (data.application_number || currentApplicationNumber));
                     window.location.href = 'dashboard.php';
                 } else {
                     alert('Ralat: ' + (data.message || 'Gagal menyerah permohonan'));
@@ -1146,6 +1290,11 @@ include '../includes/dashboard_header.php';
         }
         
         async function deleteDraft() {
+            if (!currentApplicationNumber) {
+                alert('Tiada draft untuk dipadamkan.');
+                return;
+            }
+            
             if (!confirm('Adakah anda pasti untuk memadamkan draft ini? Tindakan ini tidak boleh dibatalkan.')) {
                 return;
             }
@@ -1158,7 +1307,7 @@ include '../includes/dashboard_header.php';
                         'Authorization': `Bearer ${localStorage.getItem('sessionToken')}`
                     },
                     body: JSON.stringify({
-                        action: 'delete_draft'
+                        application_number: currentApplicationNumber
                     })
                 });
                 
@@ -1166,6 +1315,10 @@ include '../includes/dashboard_header.php';
                 
                 if (response.ok) {
                     alert('Draft berjaya dipadamkan!');
+                    // Reset the form state
+                    currentApplicationNumber = null;
+                    hideSubmitButton();
+                    hideApplicationNumberDisplay();
                     window.location.href = 'dashboard.php';
                 } else {
                     alert('Ralat: ' + (data.message || 'Gagal memadamkan draft'));
@@ -1203,7 +1356,11 @@ include '../includes/dashboard_header.php';
             const missingDocuments = [];
             
             requiredDocuments.forEach(docType => {
-                if (!uploadedFiles[docType]) {
+                const hasFile = uploadedFiles[docType] && (
+                    uploadedFiles[docType] instanceof File || 
+                    (uploadedFiles[docType] && uploadedFiles[docType].isExisting)
+                );
+                if (!hasFile) {
                     const docNames = {
                         'ssm': 'Salinan SSM',
                         'plan': 'Lakaran pelan lokasi premis',
