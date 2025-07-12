@@ -1,7 +1,7 @@
 -- eLesen Database Schema
 -- Created for eLesen License Management System
 
--- Create database if not exists
+-- -- Create database if not exists
 CREATE DATABASE IF NOT EXISTS elesen_db;
 USE elesen_db;
 
@@ -75,6 +75,44 @@ CREATE TABLE IF NOT EXISTS license_applications (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Admin table
+CREATE TABLE IF NOT EXISTS admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(15),
+    role ENUM('super_admin', 'admin', 'officer') DEFAULT 'officer',
+    password_hash VARCHAR(255) NOT NULL,
+    status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
+    last_login TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Admin sessions table
+CREATE TABLE IF NOT EXISTS admin_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
+    session_token VARCHAR(255) UNIQUE NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE
+);
+
+-- Application status history table for tracking changes
+CREATE TABLE IF NOT EXISTS application_status_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    application_id INT NOT NULL,
+    admin_id INT,
+    old_status ENUM('pending', 'processing', 'approved', 'rejected'),
+    new_status ENUM('pending', 'processing', 'approved', 'rejected'),
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES license_applications(id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE SET NULL
+);
+
 -- Insert sample data for testing
 INSERT INTO users (full_name, ic_number, phone, email, address, postcode, city, state, warna_kad_pengenalan, tarikh_lahir, umur, agama, password_hash) VALUES
 ('Ahmad bin Abdullah', '900101015432', '0123456789', 'ahmad@example.com', 'No. 123, Jalan Besar, Kampung Baru', '17000', 'Pasir Mas', 'Kelantan', 'Biru', '1990-01-01', 34, 'Islam', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'), -- password: password
@@ -85,6 +123,12 @@ INSERT INTO license_applications (user_id, application_number, license_type, bus
 (1, 'LPT-2024-001', 'Lesen Perniagaan Premis Tetap', 'Kedai Runcit Ahmad', 'No. 123, Jalan Besar, Kampung Baru, 17000 Pasir Mas, Kelantan', 'processing'),
 (1, 'LPJ-2024-002', 'Lesen Penjaja', 'Gerai Makan Ahmad', 'Pasar Besar Pasir Mas, 17000 Pasir Mas, Kelantan', 'approved'),
 (2, 'PS-2024-003', 'Permit Sementara', 'Gerai Siti', 'Taman Damai, 15000 Kota Bharu, Kelantan', 'pending');
+
+-- Insert sample admin data
+INSERT INTO admins (username, full_name, email, phone, role, password_hash) VALUES
+('admin', 'Administrator Sistem', 'admin@elesen.gov.my', '0123456789', 'super_admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'), -- password: password
+('officer1', 'Pegawai 1', 'officer1@elesen.gov.my', '0123456790', 'officer', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'), -- password: password
+('officer2', 'Pegawai 2', 'officer2@elesen.gov.my', '0123456791', 'officer', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'); -- password: password
 
 --
 -- If you are migrating an existing database, run the following SQL to add the passport_photo column:
