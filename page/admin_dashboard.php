@@ -668,14 +668,12 @@ session_start();
         // Quick action buttons
         document.getElementById('viewApplicationsBtn').addEventListener('click', function(e) {
             e.preventDefault();
-            // TODO: Navigate to applications management page
-            alert('Halaman pengurusan permohonan akan dibuka');
+            window.location.href = 'admin_applications.php';
         });
 
         document.getElementById('manageUsersBtn').addEventListener('click', function(e) {
             e.preventDefault();
-            // TODO: Navigate to user management page
-            alert('Halaman pengurusan pengguna akan dibuka');
+            window.location.href = 'admin_users.php';
         });
 
         document.getElementById('reportsBtn').addEventListener('click', function(e) {
