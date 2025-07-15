@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS license_applications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     application_number VARCHAR(30) UNIQUE NOT NULL,
+    license_number VARCHAR(30),
     license_type VARCHAR(100) NOT NULL,
     processing_type VARCHAR(50),
     business_name VARCHAR(255),
@@ -70,9 +71,17 @@ CREATE TABLE IF NOT EXISTS license_applications (
     halal_file VARCHAR(255),
     status_borang ENUM('draft', 'submit') DEFAULT 'draft',
     status ENUM('pending', 'processing', 'approved', 'rejected') DEFAULT 'pending',
+    approved_at TIMESTAMP NULL,
+    expiry_date DATE NULL,
+    license_fee DECIMAL(10,2) DEFAULT 0.00,
+    payment_status ENUM('pending', 'paid', 'overdue') DEFAULT 'pending',
+    payment_date TIMESTAMP NULL,
+    approved_by INT NULL,
+    approval_remarks TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (approved_by) REFERENCES admins(id) ON DELETE SET NULL
 );
 
 -- Admin table
@@ -119,10 +128,10 @@ INSERT INTO users (full_name, ic_number, phone, email, address, postcode, city, 
 ('Siti binti Mohamed', '850202025678', '0198765432', 'siti@example.com', 'No. 456, Taman Damai, Jalan Sultan', '15000', 'Kota Bharu', 'Kelantan', 'Merah', '1985-02-02', 39, 'Islam', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'); -- password: password
 
 -- Insert sample license applications
-INSERT INTO license_applications (user_id, application_number, license_type, business_name, business_address, status) VALUES
-(1, 'LPT-2024-001', 'Lesen Perniagaan Premis Tetap', 'Kedai Runcit Ahmad', 'No. 123, Jalan Besar, Kampung Baru, 17000 Pasir Mas, Kelantan', 'processing'),
-(1, 'LPJ-2024-002', 'Lesen Penjaja', 'Gerai Makan Ahmad', 'Pasar Besar Pasir Mas, 17000 Pasir Mas, Kelantan', 'approved'),
-(2, 'PS-2024-003', 'Permit Sementara', 'Gerai Siti', 'Taman Damai, 15000 Kota Bharu, Kelantan', 'pending');
+INSERT INTO license_applications (user_id, application_number, license_number, license_type, business_name, business_address, status, approved_at, expiry_date, license_fee, payment_status, payment_date) VALUES
+(1, 'LPT-2024-001', 'LPT-2024-001', 'Lesen Perniagaan Premis Tetap', 'Kedai Runcit Ahmad', 'No. 123, Jalan Besar, Kampung Baru, 17000 Pasir Mas, Kelantan', 'processing', NULL, NULL, 0.00, 'pending', NULL),
+(1, 'LPJ-2024-002', 'LPJ-2024-002', 'Lesen Penjaja', 'Gerai Makan Ahmad', 'Pasar Besar Pasir Mas, 17000 Pasir Mas, Kelantan', 'approved', '2024-01-10 14:20:00', '2025-01-10', 100.00, 'paid', '2024-01-10 14:20:00'),
+(2, 'PS-2024-003', 'PS-2024-003', 'Permit Sementara', 'Gerai Siti', 'Taman Damai, 15000 Kota Bharu, Kelantan', 'approved', '2024-01-05 09:15:00', '2024-07-05', 75.00, 'paid', '2024-01-05 09:15:00');
 
 -- Insert sample admin data
 INSERT INTO admins (username, full_name, email, phone, role, password_hash) VALUES

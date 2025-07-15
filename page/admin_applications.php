@@ -829,8 +829,7 @@ session_start();
         }
 
         function viewApplication(applicationId) {
-            // TODO: Navigate to detailed view page
-            alert(`Lihat permohonan ID: ${applicationId}`);
+            window.location.href = `admin_view_application.php?id=${applicationId}`;
         }
 
         // Logout functionality

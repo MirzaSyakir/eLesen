@@ -4,7 +4,7 @@
         <div class="d-flex align-items-center">
             <img src="<?php echo (strpos($_SERVER['PHP_SELF'], '/page/') !== false) ? '../image/Logo-Majlis-Daerah-Pasir-Mas.png' : 'image/Logo-Majlis-Daerah-Pasir-Mas.png'; ?>" alt="Majlis Daerah Pasir Mas Logo" style="height:60px; width:auto; margin-right:18px;">
             <span style="font-size:2rem; color:#d1d5db; margin-right:18px; user-select:none;">|</span>
-            <div class="fw-bold fs-4" style="letter-spacing:0.5px; color:#8659cf;">eLesen</div>
+            <div class="fw-bold fs-4" style="letter-spacing:0.5px; color:#8659cf;">MyLesen</div>
         </div>
         <nav class="d-none d-md-flex align-items-center gap-4">
             <a href="<?php echo (strpos($_SERVER['PHP_SELF'], '/page/') !== false) ? '../index.php' : 'index.php'; ?>" class="d-flex align-items-center text-decoration-none text-dark">

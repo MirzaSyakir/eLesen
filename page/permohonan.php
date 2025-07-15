@@ -587,6 +587,18 @@ include '../includes/dashboard_header.php';
                                 <span id="totalFee">RM10.00</span>
                             </div>
                         </div>
+                        <!-- Bank Details Info Box -->
+                        <div class="alert alert-success d-flex align-items-center gap-3" style="border-radius: 0.6rem; border: 1px solid #28a745; background: #f6fff6;">
+                            <img src="../image/logo-bankislam-jpeg-300x87.jpg" alt="Bank Islam" style="height:40px; width:auto; border-radius:4px; background:#fff; padding:2px; border:1px solid #e1e5e9;">
+                            <div>
+                                <div style="font-weight:600; font-size:1.1rem; color:#155724;">BANK ISLAM</div>
+                                <div style="font-size:1.05rem; letter-spacing:1px; color:#155724;">No. Akaun: <span style="font-weight:700;">03027010023367</span></div>
+                            </div>
+                        </div>
+                        <div class="text-muted mb-3" style="font-size:0.97rem;">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Sila simpan resit bayaran sebagai bukti pembayaran dan untuk tujuan muat naik ke dalam sistem.
+                        </div>
 
                         <!-- File Upload Section -->
                         <div class="mb-3">

@@ -422,7 +422,7 @@ include '../includes/dashboard_header.php';
                             <div class="action-title">Lesen Saya</div>
                             <div class="action-desc">Senarai lesen yang telah diluluskan</div>
                         </a>
-                        <a href="payments.php" class="action-card">
+                        <!-- <a href="payments.php" class="action-card">
                             <div class="action-icon">
                                 <i class="bi bi-credit-card"></i>
                             </div>
@@ -442,7 +442,7 @@ include '../includes/dashboard_header.php';
                             </div>
                             <div class="action-title">Bantuan</div>
                             <div class="action-desc">Hubungi sokongan teknikal</div>
-                        </a>
+                        </a> -->
                     </div>
                 </div>
 
@@ -526,6 +526,10 @@ include '../includes/dashboard_header.php';
                     // Session is valid, update user data and show dashboard
                     const user = data.data.user;
                     updateDashboard(user);
+                    // Fetch and update dashboard stats
+                    fetchDashboardStats(token);
+                    // Fetch and update recent applications
+                    fetchRecentApplications(token);
                     showDashboard();
                 } else {
                     // Session invalid, redirect to login
@@ -543,6 +547,10 @@ include '../includes/dashboard_header.php';
                     try {
                         const user = JSON.parse(userData);
                         updateDashboard(user);
+                        // Try to fetch stats if possible
+                        const sessionToken = localStorage.getItem('sessionToken');
+                        if (sessionToken) fetchDashboardStats(sessionToken);
+                        if (sessionToken) fetchRecentApplications(sessionToken);
                         showDashboard();
                     } catch (e) {
                         window.location.href = 'login.php';
@@ -550,6 +558,44 @@ include '../includes/dashboard_header.php';
                 } else {
                     window.location.href = 'login.php';
                 }
+            }
+        }
+        
+        // Fetch dashboard statistics and update the UI
+        async function fetchDashboardStats(token) {
+            try {
+                const response = await fetch('../api/profile/dashboard_stats.php', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                if (response.ok && data.status === 200) {
+                    updateDashboardStats(data.data);
+                } else {
+                    // Optionally show error or fallback
+                    updateDashboardStats();
+                }
+            } catch (error) {
+                updateDashboardStats();
+            }
+        }
+
+        // Update the dashboard stats cards
+        function updateDashboardStats(stats = {}) {
+            // Default to 0 if not available
+            const permohonanAktif = stats.permohonan_aktif ?? 0;
+            const lesenDiluluskan = stats.lesen_diluluskan ?? 0;
+            const dalamProses = stats.dalam_proses ?? 0;
+            const tamatTempoh = stats.tamat_tempoh ?? 0;
+            // Update the stat cards by order (first 4 stat-number elements)
+            const statNumbers = document.querySelectorAll('.stat-number');
+            if (statNumbers.length >= 4) {
+                statNumbers[0].textContent = permohonanAktif;
+                statNumbers[1].textContent = lesenDiluluskan;
+                statNumbers[2].textContent = dalamProses;
+                statNumbers[3].textContent = tamatTempoh;
             }
         }
         
@@ -581,6 +627,65 @@ include '../includes/dashboard_header.php';
         function showDashboard() {
             document.getElementById('loadingScreen').style.display = 'none';
             document.getElementById('dashboardContent').style.display = 'block';
+        }
+
+        // Fetch recent applications and update the UI
+        async function fetchRecentApplications(token) {
+            try {
+                const response = await fetch('../api/permohonan/view.php', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                if (response.ok && data.status === 200 && Array.isArray(data.applications)) {
+                    updateRecentApplications(data.applications);
+                } else {
+                    updateRecentApplications([]);
+                }
+            } catch (error) {
+                updateRecentApplications([]);
+            }
+        }
+
+        // Update the recent applications section
+        function updateRecentApplications(applications) {
+            const container = document.querySelector('.recent-applications .application-item')?.parentElement;
+            if (!container) return;
+            // Remove all .application-item elements
+            container.querySelectorAll('.application-item').forEach(el => el.remove());
+            // Limit to 3 most recent
+            const recent = applications.slice(0, 3);
+            if (recent.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'application-item';
+                empty.innerHTML = '<div class="application-info"><h5>Tiada permohonan terkini</h5></div>';
+                container.insertBefore(empty, container.querySelector('.text-center'));
+                return;
+            }
+            recent.forEach(app => {
+                const item = document.createElement('div');
+                item.className = 'application-item';
+                // Format date
+                const date = new Date(app.created_at).toLocaleDateString('ms-MY');
+                // Status badge
+                let statusClass = 'status-processing';
+                let statusText = 'Dalam Proses';
+                if (app.status === 'approved') { statusClass = 'status-approved'; statusText = 'Diluluskan'; }
+                else if (app.status === 'pending') { statusClass = 'status-pending'; statusText = 'Menunggu Semakan'; }
+                else if (app.status === 'rejected') { statusClass = 'status-rejected'; statusText = 'Ditolak'; }
+                else if (app.status === 'processing') { statusClass = 'status-processing'; statusText = 'Dalam Proses'; }
+                else if (app.status === 'expired') { statusClass = 'status-rejected'; statusText = 'Tamat Tempoh'; }
+                item.innerHTML = `
+                    <div class="application-info">
+                        <h5>${app.license_type || 'Jenis Lesen Tidak Diketahui'}</h5>
+                        <p>No. Permohonan: ${app.application_number || '-'} | Tarikh: ${date}</p>
+                    </div>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                `;
+                container.insertBefore(item, container.querySelector('.text-center'));
+            });
         }
     </script>
 </body>

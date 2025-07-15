@@ -126,7 +126,7 @@
         <i class="bi bi-list"></i>
     </button>
     <img src="../image/Logo-Majlis-Daerah-Pasir-Mas.png" alt="Logo" class="header-logo">
-    <span class="header-title">eLesen</span>
+    <span class="header-title">MyLesen</span>
 </header>
 <aside class="sidebar" id="sidebarNav">
     <nav class="nav flex-column">
