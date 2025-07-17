@@ -53,7 +53,7 @@ try {
     }
 
     // Get detailed application information
-    $query = "SELECT la.*, u.full_name, u.ic_number, u.phone, u.email, u.address, u.postcode, u.city, u.state
+    $query = "SELECT la.*, u.full_name, u.ic_number, u.phone, u.email, u.address, u.postcode, u.city, u.state, u.passport_photo
               FROM license_applications la
               INNER JOIN users u ON la.user_id = u.id
               WHERE la.id = :application_id";
@@ -102,7 +102,8 @@ try {
             'address' => $application['address'],
             'postcode' => $application['postcode'],
             'city' => $application['city'],
-            'state' => $application['state']
+            'state' => $application['state'],
+            'passport_photo' => $application['passport_photo']
         ],
         'status_history' => $status_history
     ];

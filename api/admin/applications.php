@@ -95,6 +95,7 @@ try {
     // Get applications
     $query = "SELECT la.id, la.application_number, la.license_type, la.business_name, 
                      la.business_address, la.status, la.status_borang, la.created_at, la.updated_at,
+                     la.no_ssm,
                      u.id as user_id, u.full_name as applicant_name, u.ic_number, u.phone, u.email
               FROM license_applications la
               INNER JOIN users u ON la.user_id = u.id

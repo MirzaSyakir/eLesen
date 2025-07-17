@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS license_applications (
     premise_size DECIMAL(10,2),
     position VARCHAR(100),
     ssm_registration ENUM('Ada','Tiada'),
+    no_ssm VARCHAR(50),
     male_workers INT DEFAULT 0,
     female_workers INT DEFAULT 0,
     has_signboard ENUM('Ya','Tidak'),

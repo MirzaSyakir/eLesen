@@ -484,6 +484,13 @@ include '../includes/dashboard_header.php';
                                     <option value="Tiada">Tiada</option>
                                 </select>
                             </div>
+                            <div class="col-md-6 mb-3" id="noSsmContainer" style="display:none;">
+                                <label for="noSsm" class="form-label">No. SSM *</label>
+                                <input type="text" class="form-control" id="noSsm" name="no_ssm" placeholder="Contoh: 1234567-A">
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="maleWorkers" class="form-label">Bilangan Pekerja Lelaki</label>
                                 <input type="number" class="form-control" id="maleWorkers" name="maleWorkers" min="0" value="0">
@@ -980,6 +987,7 @@ include '../includes/dashboard_header.php';
                     document.getElementById('premiseSize').value = application.premise_size || '';
                     document.getElementById('position').value = application.position || '';
                     document.getElementById('ssmRegistration').value = application.ssm_registration || '';
+                    document.getElementById('noSsm').value = application.no_ssm || ''; // Load No. SSM
                     document.getElementById('maleWorkers').value = application.male_workers || 0;
                     document.getElementById('femaleWorkers').value = application.female_workers || 0;
                     document.getElementById('hasSignboard').value = application.has_signboard || '';
@@ -1164,6 +1172,18 @@ include '../includes/dashboard_header.php';
                 signboardDetails.style.display = this.value === 'Ya' ? 'block' : 'none';
             });
             
+            // Show/hide No. SSM input based on SSM registration
+            document.getElementById('ssmRegistration').addEventListener('change', function() {
+                const noSsmContainer = document.getElementById('noSsmContainer');
+                if (this.value === 'Ada') {
+                    noSsmContainer.style.display = 'block';
+                    document.getElementById('noSsm').setAttribute('required', 'required');
+                } else {
+                    noSsmContainer.style.display = 'none';
+                    document.getElementById('noSsm').removeAttribute('required');
+                    document.getElementById('noSsm').value = '';
+                }
+            });
             // Handle passport photo upload
             document.getElementById('passportPhotoInput').addEventListener('change', function(e) {
                 handlePassportPhotoUpload(e.target.files);
@@ -1359,6 +1379,16 @@ include '../includes/dashboard_header.php';
                 } else if (!field.value.trim()) {
                     alert(`Sila isi semua medan yang diperlukan.`);
                     field.focus();
+                    return false;
+                }
+            }
+            // If SSM registration is 'Ada', require No. SSM
+            const ssmReg = document.getElementById('ssmRegistration').value;
+            if (ssmReg === 'Ada') {
+                const noSsm = document.getElementById('noSsm').value.trim();
+                if (!noSsm) {
+                    alert('Sila isi No. SSM.');
+                    document.getElementById('noSsm').focus();
                     return false;
                 }
             }

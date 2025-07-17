@@ -45,6 +45,7 @@ try {
     $premise_size = $_POST['premiseSize'] ?? null;
     $position = $_POST['position'] ?? null;
     $ssm_registration = $_POST['ssmRegistration'] ?? null;
+    $no_ssm = $_POST['no_ssm'] ?? null;
     $male_workers = $_POST['maleWorkers'] ?? 0;
     $female_workers = $_POST['femaleWorkers'] ?? 0;
     $has_signboard = $_POST['hasSignboard'] ?? null;
@@ -99,6 +100,7 @@ try {
         $update_fields[] = 'premise_size = ?';
         $update_fields[] = 'position = ?';
         $update_fields[] = 'ssm_registration = ?';
+        $update_fields[] = 'no_ssm = ?';
         $update_fields[] = 'male_workers = ?';
         $update_fields[] = 'female_workers = ?';
         $update_fields[] = 'has_signboard = ?';
@@ -110,7 +112,7 @@ try {
         
         $update_values = array_merge($update_values, [
             $license_type, $processing_type, $business_name, $business_address, $building_type,
-            $operation_year, $premise_size, $position, $ssm_registration, $male_workers,
+            $operation_year, $premise_size, $position, $ssm_registration, $no_ssm, $male_workers,
             $female_workers, $has_signboard, $signboard_type, $signboard_size,
             $applicant_name, $applicant_ic
         ]);
@@ -154,11 +156,11 @@ try {
 
         // Insert new draft
         $insert = $db->prepare("INSERT INTO license_applications (
-            user_id, application_number, license_type, processing_type, business_name, business_address, building_type, operation_year, premise_size, position, ssm_registration, male_workers, female_workers, has_signboard, signboard_type, signboard_size, applicant_name, applicant_ic,
+            user_id, application_number, license_type, processing_type, business_name, business_address, building_type, operation_year, premise_size, position, ssm_registration, no_ssm, male_workers, female_workers, has_signboard, signboard_type, signboard_size, applicant_name, applicant_ic,
             ssm_file, plan_file, ic_file, receipt_file, tax_file, signboard_file, health_file, land_file, owner_file, halal_file, status_borang, status
         ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
         $insert->execute([
-            $user_id, $application_number, $license_type, $processing_type, $business_name, $business_address, $building_type, $operation_year, $premise_size, $position, $ssm_registration, $male_workers, $female_workers, $has_signboard, $signboard_type, $signboard_size, $applicant_name, $applicant_ic,
+            $user_id, $application_number, $license_type, $processing_type, $business_name, $business_address, $building_type, $operation_year, $premise_size, $position, $ssm_registration, $no_ssm, $male_workers, $female_workers, $has_signboard, $signboard_type, $signboard_size, $applicant_name, $applicant_ic,
             $doc_paths['ssm'], $doc_paths['plan'], $doc_paths['ic'], $doc_paths['receipt'], $doc_paths['tax'], $doc_paths['signboard'], $doc_paths['health'], $doc_paths['land'], $doc_paths['owner'], $doc_paths['halal'], $status_borang, 'pending'
         ]);
 

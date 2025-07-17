@@ -367,6 +367,11 @@ session_start();
                     <i class="bi bi-person-circle"></i>
                     Maklumat Pemohon
                 </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 text-center">
+                        <img id="passportPhotoImg" src="../image/default-avatar.png" alt="Foto Passport" style="width:120px; height:160px; object-fit:cover; border-radius:0.5rem; border:2px solid #eee; background:#f8f9fa;">
+                    </div>
+                    <div class="col-md-9">
                 <div class="detail-grid">
                     <div class="detail-item">
                         <div class="detail-label">Nama Penuh</div>
@@ -387,6 +392,8 @@ session_start();
                     <div class="detail-item">
                         <div class="detail-label">Alamat</div>
                         <div class="detail-value" id="applicantAddress">-</div>
+                    </div>
+                </div>
                     </div>
                 </div>
             </div>
@@ -425,6 +432,10 @@ session_start();
                     <div class="detail-item">
                         <div class="detail-label">Pendaftaran SSM</div>
                         <div class="detail-value" id="ssmRegistration">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">No. SSM</div>
+                        <div class="detail-value" id="noSsm">-</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Bilangan Pekerja Lelaki</div>
@@ -610,6 +621,13 @@ session_start();
             document.getElementById('applicantPhone').textContent = applicant.phone;
             document.getElementById('applicantEmail').textContent = applicant.email || '-';
             document.getElementById('applicantAddress').textContent = `${applicant.address}, ${applicant.postcode} ${applicant.city}, ${applicant.state}`;
+            // Passport photo
+            const passportPhotoImg = document.getElementById('passportPhotoImg');
+            if (applicant.passport_photo && applicant.passport_photo !== '') {
+                passportPhotoImg.src = '../' + applicant.passport_photo;
+            } else {
+                passportPhotoImg.src = '../image/default-avatar.png';
+            }
 
             // Business information
             document.getElementById('businessName').textContent = app.business_name || '-';
@@ -619,6 +637,7 @@ session_start();
             document.getElementById('premiseSize').textContent = app.premise_size || '-';
             document.getElementById('position').textContent = app.position || '-';
             document.getElementById('ssmRegistration').textContent = app.ssm_registration || '-';
+            document.getElementById('noSsm').textContent = app.no_ssm || '-';
             document.getElementById('maleWorkers').textContent = app.male_workers || '0';
             document.getElementById('femaleWorkers').textContent = app.female_workers || '0';
 
